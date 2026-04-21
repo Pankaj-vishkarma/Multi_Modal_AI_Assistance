@@ -21,7 +21,11 @@ exports.uploadFile = asyncHandler(async (req, res) => {
     // IMPORTANT: create public URL
     const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
-    const fileUrl = `${BASE_URL}/${file.path.replace(/\\/g, "/")}`;
+    const cleanPath = file.path
+        .replace(/\\/g, "/")
+        .replace("src/", "");
+
+    const fileUrl = `${BASE_URL}/${cleanPath}`;
 
     res.json({
         success: true,

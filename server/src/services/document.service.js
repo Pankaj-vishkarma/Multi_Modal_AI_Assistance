@@ -28,7 +28,7 @@ const downloadFile = async (fileUrl, outputPath) => {
  */
 const extractPDFText = async (filePath) => {
     const buffer = fs.readFileSync(filePath);
-    const data = await pdfParse(buffer);
+    const data = await  pdfParse(buffer);
     return data.text;
 };
 
@@ -36,14 +36,14 @@ const extractPDFText = async (filePath) => {
  * Process document
  */
 exports.processDocument = async (fileUrl, prompt) => {
+    const timestamp = Date.now();
+
+    const tempDir = path.join(process.cwd(), "src/storage/temp");
+    fs.mkdirSync(tempDir, { recursive: true });
+
+    const localPath = path.join(tempDir, `${timestamp}.pdf`);
+
     try {
-        const timestamp = Date.now();
-
-        const tempDir = path.join(process.cwd(), "src/storage/temp");
-        fs.mkdirSync(tempDir, { recursive: true });
-
-        const localPath = path.join(tempDir, `${timestamp}.pdf`);
-
         // Download PDF
         await downloadFile(fileUrl, localPath);
 
@@ -54,10 +54,8 @@ exports.processDocument = async (fileUrl, prompt) => {
             throw new Error("No text found in document");
         }
 
-        // Limit text size
         const limitedText = text.slice(0, 5000);
 
-        //  AI Analysis
         const response = await aiService.analyzeText(
             limitedText,
             prompt || "Summarize this document"
@@ -65,11 +63,16 @@ exports.processDocument = async (fileUrl, prompt) => {
 
         return {
             extractedText: limitedText,
-            aiAnalysis: response,
+            aiAnalysis: response?.result || "No analysis",
         };
 
     } catch (error) {
         console.error("Document processing error:", error.message);
         throw new Error("Document processing failed");
+    } finally {
+        // CLEANUP
+        if (fs.existsSync(localPath)) {
+            fs.unlinkSync(localPath);
+        }
     }
 };

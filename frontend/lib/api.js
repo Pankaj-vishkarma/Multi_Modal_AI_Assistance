@@ -24,6 +24,7 @@ API.interceptors.response.use(
 
     console.error("API Error:", message);
 
+    // keep throwing
     return Promise.reject(new Error(message));
   }
 );
@@ -39,7 +40,12 @@ export const sendChatMessage = async (message, conversationHistory) => {
 
 // ================= STREAM CHAT =================
 
-export const streamChatMessage = async (message, conversationHistory, onChunk) => {
+export const streamChatMessage = async (
+  message,
+  conversationHistory,
+  attachments = [],
+  onChunk
+) => {
   try {
     const response = await fetch(`${BASE_URL}/chat/stream`, {
       method: "POST",
@@ -49,6 +55,7 @@ export const streamChatMessage = async (message, conversationHistory, onChunk) =
       body: JSON.stringify({
         message,
         conversationHistory,
+        attachments,
       }),
     });
 
@@ -64,19 +71,53 @@ export const streamChatMessage = async (message, conversationHistory, onChunk) =
     const decoder = new TextDecoder("utf-8");
 
     let done = false;
+    let buffer = "";
 
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
 
       if (value) {
-        const chunk = decoder.decode(value);
-        onChunk(chunk);
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop();
+
+        for (let part of parts) {
+          part = part.trim();
+
+          if (!part.startsWith("data:")) continue;
+
+          const jsonStr = part.replace("data:", "").trim();
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+
+            if (parsed?.content) {
+              onChunk(parsed.content);
+            }
+          } catch { }
+        }
       }
     }
+
+    // IMPORTANT: process remaining buffer
+    if (buffer.trim().startsWith("data:")) {
+      try {
+        const jsonStr = buffer.replace("data:", "").trim();
+        const parsed = JSON.parse(jsonStr);
+
+        if (parsed?.content) {
+          onChunk(parsed.content);
+        }
+      } catch { }
+    }
+
   } catch (error) {
     console.error("Streaming error:", error.message);
-    throw error;
+    onChunk(" Error: " + error.message);
+    return null;
   }
 };
 

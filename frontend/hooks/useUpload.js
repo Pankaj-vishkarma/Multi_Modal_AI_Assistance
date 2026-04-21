@@ -10,10 +10,10 @@ export const useUpload = () => {
   const upload = useCallback(async (file) => {
     if (!file) return null;
 
-    const maxSize = 10 * 1024 * 1024;
+    const maxSize = 100 * 1024 * 1024;
 
     if (file.size > maxSize) {
-      const message = 'File size should be less than 10MB';
+      const message = 'File size should be less than 100MB';
       setError(message);
       showErrorToast(message);
       return null;

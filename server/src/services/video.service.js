@@ -7,9 +7,16 @@ const axios = require("axios");
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 /**
- * Download video from URL → local path
+ * Download video
  */
-const downloadVideo = async (videoUrl, outputPath) => {
+exports.downloadVideo = async (videoUrl) => {
+    const timestamp = Date.now();
+
+    const tempDir = path.join(process.cwd(), "src/storage/temp");
+    fs.mkdirSync(tempDir, { recursive: true });
+
+    const outputPath = path.join(tempDir, `${timestamp}.mp4`);
+
     const writer = fs.createWriteStream(outputPath);
 
     const response = await axios({
@@ -20,55 +27,73 @@ const downloadVideo = async (videoUrl, outputPath) => {
 
     return new Promise((resolve, reject) => {
         response.data.pipe(writer);
-        writer.on("finish", resolve);
+        writer.on("finish", () => resolve(outputPath));
         writer.on("error", reject);
     });
 };
 
 /**
- * Extract frames from video
+ * Extract frames
  */
-exports.extractFrames = async (videoUrl) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const timestamp = Date.now();
+exports.extractFrames = async (localVideoPath) => {
+    return new Promise((resolve, reject) => {
+        const timestamp = Date.now();
 
-            const tempDir = path.join(process.cwd(), "src/storage/temp");
-            const frameDir = path.join(process.cwd(), "src/storage/frames", timestamp.toString());
+        const frameDir = path.join(
+            process.cwd(),
+            "src/storage/frames",
+            timestamp.toString()
+        );
 
-            fs.mkdirSync(tempDir, { recursive: true });
-            fs.mkdirSync(frameDir, { recursive: true });
+        fs.mkdirSync(frameDir, { recursive: true });
 
-            // 📥 download video
-            const localVideoPath = path.join(tempDir, `${timestamp}.mp4`);
-            await downloadVideo(videoUrl, localVideoPath);
+        ffmpeg(localVideoPath)
+            .outputOptions(["-vf fps=1"])
+            .output(path.join(frameDir, "frame-%03d.jpg"))
+            .on("end", () => {
+                let files = fs.readdirSync(frameDir);
 
-            const framePaths = [];
+                // sort frames properly
+                files = files.sort();
 
-            ffmpeg(localVideoPath)
-                .outputOptions(["-vf fps=1"])
-                .output(path.join(frameDir, "frame-%03d.jpg"))
-                .on("end", () => {
-                    const files = fs.readdirSync(frameDir);
+                const framePaths = files.map((file) =>
+                    path.join(frameDir, file)
+                );
 
-                    files.forEach((file) => {
-                        const fullPath = path.join(frameDir, file);
-
-                        // convert to URL
-                        const url = `${process.env.BASE_URL || "http://localhost:5000"}/${fullPath.replace(/\\/g, "/")}`;
-
-                        framePaths.push(url);
-                    });
-
-                    resolve(framePaths);
-                })
-                .on("error", (err) => {
-                    console.error("FFmpeg error:", err.message);
-                    reject(err);
-                })
-                .run();
-        } catch (error) {
-            reject(error);
-        }
+                resolve(framePaths);
+            })
+            .on("error", (err) => {
+                console.error("FFmpeg error:", err.message);
+                reject(err);
+            })
+            .run();
     });
+};
+
+/**
+ * Cleanup frames
+ */
+exports.cleanupFrames = async (framePaths) => {
+    try {
+        if (!framePaths || framePaths.length === 0) return;
+
+        const dir = path.dirname(framePaths[0]);
+
+        fs.rmSync(dir, { recursive: true, force: true });
+    } catch (err) {
+        console.error("Cleanup frames error:", err.message);
+    }
+};
+
+/**
+ * Cleanup video
+ */
+exports.cleanupVideo = async (videoPath) => {
+    try {
+        if (fs.existsSync(videoPath)) {
+            fs.unlinkSync(videoPath);
+        }
+    } catch (err) {
+        console.error("Cleanup video error:", err.message);
+    }
 };

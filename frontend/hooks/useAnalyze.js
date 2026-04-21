@@ -15,7 +15,6 @@ export const useAnalyze = () => {
         setResult(null);
 
         try {
-            // Detect file type
             let fileType = "unknown";
 
             if (file.type?.startsWith("image/")) {
@@ -28,7 +27,6 @@ export const useAnalyze = () => {
                 fileType = "document";
             }
 
-            //  Prevent invalid API call
             if (fileType === "unknown") {
                 const message = "Unsupported file type";
                 setError(message);
@@ -36,13 +34,27 @@ export const useAnalyze = () => {
                 return null;
             }
 
-            // API call
             const response = await analyzeMedia(file.url, fileType);
 
-            setResult(response);
+            // IMPORTANT FIX: normalize response
+            let finalResult = null;
+
+            if (fileType === "document") {
+                finalResult = response?.aiAnalysis || response?.result || "No analysis";
+            } else {
+                finalResult = response?.result || response?.data || response;
+            }
+
+            // Handle backend error response
+            if (response?.success === false) {
+                throw new Error(response.message || "Analysis failed");
+            }
+
+            setResult(finalResult);
+
             showSuccessToast("Analysis completed");
 
-            return response;
+            return finalResult;
 
         } catch (err) {
             const message =

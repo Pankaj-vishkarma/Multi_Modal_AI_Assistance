@@ -16,23 +16,20 @@ export const useChat = () => {
         return;
       }
 
-      // prevent duplicate calls
       if (isSendingRef.current) return;
       isSendingRef.current = true;
 
       setError(null);
       setIsLoading(true);
 
-      // Create user message
       const newMessage = {
-        id: Date.now() + Math.random(), // unique id
+        id: Date.now() + Math.random(),
         role: 'user',
         content: userMessage,
         attachments,
         timestamp: new Date(),
       };
 
-      // create updated state safely (NO double setMessages)
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
 
@@ -45,45 +42,38 @@ export const useChat = () => {
         let fullContent = '';
         let isFirstChunk = true;
 
-        await streamChatMessage(userMessage, conversationHistory, (chunk) => {
-          try {
-            const lines = chunk.split('\n');
+        await streamChatMessage(
+          userMessage,
+          conversationHistory,
+          attachments, // IMPORTANT FIX
+          (chunk) => {
+            try {
+              // NO parsing — chunk is already clean text
+              fullContent += chunk;
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = JSON.parse(line.slice(6));
-
-                if (data.content) {
-                  fullContent += data.content;
-
-                  // First chunk → create assistant message
-                  if (isFirstChunk) {
-                    setMessages((prev) => [
-                      ...prev,
-                      {
-                        id: Date.now() + Math.random(), // unique id
-                        role: 'assistant',
-                        content: fullContent,
-                        timestamp: new Date(),
-                      },
-                    ]);
-                    isFirstChunk = false;
-                  }
-                  // Next chunks → update last message
-                  else {
-                    setMessages((prev) => {
-                      const updated = [...prev];
-                      updated[updated.length - 1].content = fullContent;
-                      return updated;
-                    });
-                  }
-                }
+              if (isFirstChunk) {
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: Date.now() + Math.random(),
+                    role: 'assistant',
+                    content: fullContent,
+                    timestamp: new Date(),
+                  },
+                ]);
+                isFirstChunk = false;
+              } else {
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  updated[updated.length - 1].content = fullContent;
+                  return updated;
+                });
               }
+            } catch (e) {
+              console.error("Chunk error:", e);
             }
-          } catch (e) {
-            // Ignore parsing errors
           }
-        });
+        );
 
       } catch (err) {
         const message = err.message || 'Failed to send message';
@@ -93,8 +83,6 @@ export const useChat = () => {
         console.error('Error sending message:', err);
       } finally {
         setIsLoading(false);
-
-        // reset guard
         isSendingRef.current = false;
       }
     },

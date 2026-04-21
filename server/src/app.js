@@ -27,7 +27,11 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(compression());
-app.use("/storage", express.static("storage"));
+app.use("/storage", (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+}, express.static("src/storage"));
 
 // Request logger
 app.use((req, res, next) => {
