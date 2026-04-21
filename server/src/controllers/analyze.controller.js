@@ -3,6 +3,7 @@ const aiService = require("../services/ai.service");
 const videoService = require("../services/video.service");
 const audioService = require("../services/audio.service");
 const documentService = require("../services/document.service");
+const imageService = require("../services/image.service");
 
 /**
  * Image analysis
@@ -99,6 +100,39 @@ exports.analyzeDocument = asyncHandler(async (req, res) => {
         fileUrl,
         prompt
     );
+
+    res.json({
+        success: true,
+        data: result,
+    });
+});
+
+
+
+exports.compareImages = asyncHandler(async (req, res) => {
+    const files = req.files;
+
+    // validation
+    if (!files || files.length < 2) {
+        return res.status(400).json({
+            success: false,
+            message: "At least 2 images are required",
+        });
+    }
+
+    //  IMPORTANT: image validation
+    const invalidFile = files.find(
+        (file) => !file.mimetype.startsWith("image/")
+    );
+
+    if (invalidFile) {
+        return res.status(400).json({
+            success: false,
+            message: "Only image files are allowed for comparison",
+        });
+    }
+
+    const result = await imageService.compareImages(files);
 
     res.json({
         success: true,
