@@ -32,7 +32,18 @@ export function ChatInput({
     // store current attachments before clearing
     const currentAttachments = [...attachments];
 
-    onSendMessage(message.trim(), currentAttachments);
+    // detect multiple image attachments
+    const imageFiles = currentAttachments.filter(
+      (file) =>
+        file instanceof File && file.type?.startsWith("image/")
+    );
+
+    if (imageFiles.length > 1) {
+      // trigger image comparison
+      onSendMessage("__COMPARE_IMAGES__", imageFiles);
+    } else {
+      onSendMessage(message.trim(), currentAttachments);
+    }
 
     setMessage('');
     setRows(1);

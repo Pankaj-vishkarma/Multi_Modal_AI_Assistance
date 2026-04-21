@@ -150,6 +150,29 @@ export const analyzeMedia = async (fileUrl, fileType) => {
   });
 };
 
+// ================= IMAGE COMPARISON =================
+
+export const compareImagesAPI = async (files) => {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  try {
+    const response = await API.post("/analyze/compare-images", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Compare Images API Error:", error.message);
+    throw error;
+  }
+};
+
 // ================= HEALTH CHECK =================
 
 export const checkBackendHealth = async () => {

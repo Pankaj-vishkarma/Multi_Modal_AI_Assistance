@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { useUpload } from '../hooks/useUpload';
 
-export function MediaUploader({ onMediaAdded }) {
+export function MediaUploader({ onMediaAdded, onMultipleFilesSelected }) {
   const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
   const { upload, isUploading, uploadProgress, error } = useUpload();
@@ -11,16 +11,24 @@ export function MediaUploader({ onMediaAdded }) {
   const handleFileSelect = async (files) => {
     if (!files || files.length === 0) return;
 
-    // Parallel upload (faster)
-    const uploadPromises = Array.from(files).map(async (file) => {
-      // Basic file type validation
-      const allowedTypes = [
-        'image/',
-        'video/',
-        'audio/',
-        'application/pdf',
-      ];
+    const fileArray = Array.from(files);
 
+    console.log("ALL FILES:", fileArray);
+    console.log("FILE TYPES:", fileArray.map(f => f.type));
+
+    // If multiple images → trigger comparison flow
+    const imageFiles = fileArray.filter(file => file.type.startsWith("image/"));
+
+    console.log("IMAGE FILES:", imageFiles);
+    console.log("IMAGE COUNT:", imageFiles.length);
+
+    if (imageFiles.length > 1 && onMultipleFilesSelected) {
+      onMultipleFilesSelected(imageFiles);
+      return; // STOP normal upload flow
+    }
+
+    // ================= EXISTING FLOW (UNCHANGED) =================
+    const uploadPromises = fileArray.map(async (file) => {
       const isValid =
         file.type.startsWith("image/") ||
         file.type.startsWith("video/") ||

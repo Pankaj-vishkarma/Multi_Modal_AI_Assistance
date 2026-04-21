@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { streamChatMessage } from '../lib/api';
+import { streamChatMessage, compareImagesAPI } from '../lib/api';
+//import { compareImagesAPI } from '../lib/api';
 import { showErrorToast } from '../hooks/use-toast';
 
 export const useChat = () => {
@@ -7,12 +8,12 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // prevent double trigger (IMPORTANT)
+  // prevent double trigger
   const isSendingRef = useRef(false);
 
   const sendMessage = useCallback(
     async (userMessage, attachments = []) => {
-      if (!userMessage.trim() && attachments.length === 0) {
+      if ((!userMessage || !userMessage.trim()) && attachments.length === 0) {
         return;
       }
 
@@ -25,7 +26,10 @@ export const useChat = () => {
       const newMessage = {
         id: Date.now() + Math.random(),
         role: 'user',
-        content: userMessage,
+        content:
+          userMessage === "__COMPARE_IMAGES__"
+            ? "Comparing images..."
+            : userMessage,
         attachments,
         timestamp: new Date(),
       };
@@ -34,6 +38,31 @@ export const useChat = () => {
       setMessages(updatedMessages);
 
       try {
+        // ================= IMAGE COMPARISON FLOW =================
+        if (userMessage === "__COMPARE_IMAGES__") {
+          const response = await compareImagesAPI(attachments);
+
+          if (!response?.success) {
+            throw new Error(response?.message || "Comparison failed");
+          }
+
+          const comparisonText = response.data?.comparison || "No comparison result";
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now() + Math.random(),
+              role: 'assistant',
+              content: comparisonText,
+              timestamp: new Date(),
+            },
+          ]);
+
+          return;
+        }
+
+        // ================= NORMAL CHAT FLOW (UNCHANGED) =================
+
         const conversationHistory = updatedMessages.map((msg) => ({
           role: msg.role,
           content: msg.content,
@@ -45,10 +74,9 @@ export const useChat = () => {
         await streamChatMessage(
           userMessage,
           conversationHistory,
-          attachments, // IMPORTANT FIX
+          attachments,
           (chunk) => {
             try {
-              // NO parsing — chunk is already clean text
               fullContent += chunk;
 
               if (isFirstChunk) {

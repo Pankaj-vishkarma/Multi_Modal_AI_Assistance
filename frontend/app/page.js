@@ -19,9 +19,11 @@ function HomeContent() {
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
 
   const handleSendMessage = async (message, messageAttachments) => {
-    // Analyze all attachments before sending
-    for (const file of messageAttachments) {
-      await analyze(file);
+    // Skip analyze for image comparison
+    if (message !== "__COMPARE_IMAGES__") {
+      for (const file of messageAttachments) {
+        await analyze(file);
+      }
     }
 
     sendMessage(message, messageAttachments);
@@ -115,7 +117,12 @@ function HomeContent() {
                     ✕
                   </button>
                 </div>
-                <MediaUploader onMediaAdded={handleMediaAdded} />
+                <MediaUploader
+                  onMediaAdded={handleMediaAdded}
+                  onMultipleFilesSelected={(files) => {
+                    sendMessage("__COMPARE_IMAGES__", files);
+                  }}
+                />
               </div>
             )}
 
