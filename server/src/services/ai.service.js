@@ -5,6 +5,8 @@ const path = require("path");
 const { extractTextFromImage } = require("../utils/ocr.util");
 const https = require("https");
 
+const getBaseUrl = () => (process.env.BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+
 /**
  * Convert file URL → base64
  */
@@ -60,8 +62,9 @@ exports.analyzeImage = async (fileUrl, prompt) => {
         let fullPath = fileUrl;
 
         if (typeof fileUrl === "string" && fileUrl.startsWith("http")) {
+            const storageUrl = `${getBaseUrl()}/storage/`;
             const relativePath = fileUrl.replace(
-                "http://localhost:5000/storage/",
+                storageUrl,
                 "src/storage/"
             );
 

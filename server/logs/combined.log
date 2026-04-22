@@ -913,3 +913,17 @@
 {"level":"info","message":"Server running at http://0.0.0.0:5000","timestamp":"2026-04-22T07:50:51.166Z"}
 {"level":"info","message":"MongoDB Connected: ac-7wwaisw-shard-00-02.wdpmvxf.mongodb.net","timestamp":"2026-04-22T07:50:53.227Z"}
 {"level":"info","message":"Server running at http://0.0.0.0:5000","timestamp":"2026-04-22T07:50:53.240Z"}
+{"level":"info","message":"MongoDB Connected: ac-7wwaisw-shard-00-01.wdpmvxf.mongodb.net","timestamp":"2026-04-22T09:34:11.607Z"}
+{"level":"info","message":"Server running at http://localhost:5000","timestamp":"2026-04-22T09:34:11.615Z"}
+{"level":"info","message":"[2026-04-22T09:34:41.512Z] GET /api/chat/history","timestamp":"2026-04-22T09:34:41.512Z"}
+{"level":"info","message":"[2026-04-22T09:34:41.585Z] GET /api/chat/history","timestamp":"2026-04-22T09:34:41.585Z"}
+{"level":"info","message":"[2026-04-22T09:35:23.121Z] POST /api/auth/login","timestamp":"2026-04-22T09:35:23.121Z"}
+{"level":"info","message":"[2026-04-22T09:35:23.605Z] GET /api/chat/history","timestamp":"2026-04-22T09:35:23.605Z"}
+{"level":"info","message":"[2026-04-22T09:37:53.041Z] POST /api/auth/login","timestamp":"2026-04-22T09:37:53.041Z"}
+{"level":"info","message":"[2026-04-22T09:37:53.555Z] GET /api/chat/history","timestamp":"2026-04-22T09:37:53.555Z"}
+{"level":"info","message":"[2026-04-22T09:45:40.158Z] GET /api/chat/history","timestamp":"2026-04-22T09:45:40.158Z"}
+{"level":"info","message":"[2026-04-22T09:45:40.216Z] GET /api/chat/history","timestamp":"2026-04-22T09:45:40.216Z"}
+{"level":"info","message":"[2026-04-22T09:45:56.821Z] POST /api/upload","timestamp":"2026-04-22T09:45:56.821Z"}
+{"level":"info","message":"[2026-04-22T09:46:04.607Z] POST /api/analyze/image","timestamp":"2026-04-22T09:46:04.607Z"}
+{"level":"info","message":"[2026-04-22T09:46:16.784Z] POST /api/chat/stream","timestamp":"2026-04-22T09:46:16.784Z"}
+{"level":"info","message":"Shutting down server...","timestamp":"2026-04-22T09:47:06.177Z"}
