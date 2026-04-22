@@ -5,9 +5,17 @@ const listeners = [];
 
 let memoryState = { toasts: [] };
 
-// Better ID generator
+// FIXED ID generator (works everywhere)
 function generateId() {
-  return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  // fallback (works in all browsers + SSR)
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).substring(2, 10)
+  );
 }
 
 // Dispatch function
@@ -44,7 +52,6 @@ export function toast(props) {
     },
   });
 
-  // Auto remove after delay (better UX)
   setTimeout(() => {
     dismiss();
   }, 4000);
@@ -58,7 +65,6 @@ export function toast(props) {
 
 // ================= CUSTOM HELPERS =================
 
-// Success toast
 export const showSuccessToast = (message) => {
   toast({
     title: "Success",
@@ -66,7 +72,6 @@ export const showSuccessToast = (message) => {
   });
 };
 
-// Error toast
 export const showErrorToast = (message) => {
   toast({
     title: "Error",
@@ -89,7 +94,7 @@ export function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, []); // FIXED (no re-register)
+  }, []);
 
   return {
     ...state,
