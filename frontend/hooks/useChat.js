@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
 import { streamChatMessage, compareImagesAPI } from '../lib/api';
-//import { compareImagesAPI } from '../lib/api';
 import { showErrorToast } from '../hooks/use-toast';
 
 export const useChat = () => {
@@ -34,8 +33,19 @@ export const useChat = () => {
         timestamp: new Date(),
       };
 
-      const updatedMessages = [...messages, newMessage];
-      setMessages(updatedMessages);
+      let conversationHistory = [];
+
+      // SAFE STATE + CORRECT HISTORY
+      setMessages((prev) => {
+        const updated = [...prev, newMessage];
+
+        conversationHistory = updated.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+
+        return updated;
+      });
 
       try {
         // ================= IMAGE COMPARISON FLOW =================
@@ -46,7 +56,8 @@ export const useChat = () => {
             throw new Error(response?.message || "Comparison failed");
           }
 
-          const comparisonText = response.data?.comparison || "No comparison result";
+          const comparisonText =
+            response.data?.comparison || "No comparison result";
 
           setMessages((prev) => [
             ...prev,
@@ -58,15 +69,12 @@ export const useChat = () => {
             },
           ]);
 
+          setIsLoading(false);
+          isSendingRef.current = false;
           return;
         }
 
-        // ================= NORMAL CHAT FLOW (UNCHANGED) =================
-
-        const conversationHistory = updatedMessages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
+        // ================= NORMAL CHAT FLOW =================
 
         let fullContent = '';
         let isFirstChunk = true;
@@ -114,11 +122,17 @@ export const useChat = () => {
         isSendingRef.current = false;
       }
     },
-    [messages]
+    [] //  NO stale dependency
   );
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    setError(null);
+  }, []);
+
+  // for loading chat history
+  const loadMessages = useCallback((msgs) => {
+    setMessages(msgs);
     setError(null);
   }, []);
 
@@ -128,5 +142,6 @@ export const useChat = () => {
     error,
     sendMessage,
     clearMessages,
+    loadMessages,
   };
 };

@@ -13,6 +13,17 @@ const API = axios.create({
   },
 });
 
+API.interceptors.request.use((config) => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
 // ================= INTERCEPTORS =================
 
 // Response interceptor (global error handling)
@@ -22,7 +33,7 @@ API.interceptors.response.use(
     const message =
       error?.response?.data?.message || error.message || "Something went wrong";
 
-    console.error("API Error:", message);
+    console.error("API Error:", error?.response || message);
 
     // keep throwing
     return Promise.reject(new Error(message));
@@ -47,10 +58,14 @@ export const streamChatMessage = async (
   onChunk
 ) => {
   try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
     const response = await fetch(`${BASE_URL}/chat/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
       },
       body: JSON.stringify({
         message,
@@ -173,8 +188,16 @@ export const compareImagesAPI = async (files) => {
   }
 };
 
+export const getChatHistory = async () => {
+  return await API.get("/chat/history");
+};
+
+
 // ================= HEALTH CHECK =================
 
 export const checkBackendHealth = async () => {
   return await API.get("/health");
 };
+
+
+

@@ -1,5 +1,6 @@
 const asyncHandler = require("../middlewares/async.middleware");
 const aiService = require("../services/ai.service");
+const Message = require("../models/message.model");
 
 /**
  * Normal chat (non-stream)
@@ -14,7 +15,23 @@ exports.chat = asyncHandler(async (req, res) => {
         });
     }
 
+    //  SAVE USER MESSAGE
+    if (message?.trim()) {
+        await Message.create({
+            userId: req.user.id,
+            role: "user",
+            content: message,
+        });
+    }
+
     const aiResponse = await aiService.generateTextResponse(message);
+
+    // SAVE AI RESPONSE
+    await Message.create({
+        userId: req.user.id,
+        role: "assistant",
+        content: aiResponse,
+    });
 
     res.json({
         success: true,
@@ -37,6 +54,14 @@ exports.streamChat = async (req, res) => {
 
     try {
         let finalPrompt = message || "";
+
+        if (message?.trim()) {
+            await Message.create({
+                userId: req.user.id,
+                role: "user",
+                content: message,
+            });
+        }
 
         // HANDLE ATTACHMENTS
         if (attachments && attachments.length > 0) {
@@ -105,16 +130,83 @@ exports.streamChat = async (req, res) => {
         }
 
         // STREAM FINAL AI RESPONSE
+        let fullResponse = "";
+
         await aiService.streamResponse(finalPrompt, conversationHistory, (chunk) => {
+            fullResponse += chunk;
+
             res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+        });
+
+        await Message.create({
+            userId: req.user.id,
+            role: "assistant",
+            content: fullResponse,
         });
 
         res.end();
 
     } catch (error) {
+        console.error("Stream error:", error.message);
+
+        await Message.create({
+            userId: req.user?.id,
+            role: "assistant",
+            content: "Error: " + error.message,
+        });
+
         res.write(
             `data: ${JSON.stringify({ content: "Error: " + error.message })}\n\n`
         );
         res.end();
     }
 };
+
+/**
+ * Get chat history for logged-in user
+ */
+exports.getHistory = asyncHandler(async (req, res) => {
+    const messages = await Message.find({
+        userId: req.user.id,
+    })
+        .sort({ createdAt: 1 })
+        .limit(100);
+
+    const history = [];
+
+    for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+
+        // ONLY USER MESSAGE SE CHAT BANAYENGE
+        if (msg.role === "user") {
+            const nextMsg = messages[i + 1];
+
+            history.push({
+                _id: msg._id,
+                title: msg.content?.slice(0, 30) || "New Chat",
+
+                // GROUPED MESSAGES
+                messages: [
+                    {
+                        role: "user",
+                        content: msg.content,
+                    },
+                    {
+                        role: "assistant",
+                        content:
+                            nextMsg && nextMsg.role === "assistant"
+                                ? nextMsg.content
+                                : "",
+                    },
+                ],
+
+                createdAt: msg.createdAt,
+            });
+        }
+    }
+
+    res.json({
+        success: true,
+        data: history,
+    });
+});

@@ -15,8 +15,9 @@ function HomeContent() {
   const [showMediaUploader, setShowMediaUploader] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const { analyze } = useAnalyze();
+  const [selectedConversation, setSelectedConversation] = useState(null);
 
-  const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
+  const { messages, isLoading, error, sendMessage, clearMessages, loadMessages } = useChat();
 
   const handleSendMessage = async (message, messageAttachments) => {
     // Skip analyze for image comparison
@@ -28,6 +29,23 @@ function HomeContent() {
 
     sendMessage(message, messageAttachments);
   };
+
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    const msgs = selectedConversation.full.messages;
+
+    const formattedMessages = msgs.map((m, index) => ({
+      id: Date.now() + index,
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(),
+    }));
+
+    clearMessages();
+    loadMessages(formattedMessages);
+
+  }, [selectedConversation, loadMessages, clearMessages]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -67,6 +85,7 @@ function HomeContent() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onNewChat={handleClearChat}
+        onSelectConversation={setSelectedConversation}
       />
 
       {/* Main Content */}
