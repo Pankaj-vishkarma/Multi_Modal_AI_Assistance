@@ -1,11 +1,9 @@
 const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
-const path = require("path");
 const { extractTextFromImage } = require("../utils/ocr.util");
 const https = require("https");
-
-const getBaseUrl = () => (process.env.BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+const { resolveUploadPathFromUrl } = require("../config/storage");
 
 /**
  * Convert file URL → base64
@@ -59,23 +57,7 @@ exports.analyzeImage = async (fileUrl, prompt) => {
         // ================= STEP 1: READ IMAGE FROM DISK =================
         console.log("Reading image from local storage...");
 
-        let fullPath = fileUrl;
-
-        if (typeof fileUrl === "string" && fileUrl.startsWith("http")) {
-            const storageUrl = `${getBaseUrl()}/storage/`;
-            const relativePath = fileUrl.replace(
-                storageUrl,
-                "src/storage/"
-            );
-
-            fullPath = path.join(process.cwd(), relativePath);
-        }
-
-        if (typeof fileUrl === "string" && fileUrl.includes(":\\")) {
-            fullPath = fileUrl;
-        }
-
-        console.log("Resolved file path:", fullPath);
+        const fullPath = resolveUploadPathFromUrl(fileUrl);
 
         console.log("Resolved file path:", fullPath);
 

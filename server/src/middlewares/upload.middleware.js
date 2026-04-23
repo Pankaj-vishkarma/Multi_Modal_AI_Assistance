@@ -2,20 +2,19 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const { uploadsDir } = require("../config/storage");
 
 // ================= ENSURE UPLOAD FOLDER EXISTS =================
 
-const uploadDir = "src/storage/uploads";
-
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // ================= STORAGE =================
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadDir);
+        cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();

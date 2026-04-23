@@ -3,6 +3,7 @@ const ffmpegPath = require("ffmpeg-static");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
+const { tempDir, framesDir } = require("../config/storage");
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -12,7 +13,6 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 exports.downloadVideo = async (videoUrl) => {
     const timestamp = Date.now();
 
-    const tempDir = path.join(process.cwd(), "src/storage/temp");
     fs.mkdirSync(tempDir, { recursive: true });
 
     const outputPath = path.join(tempDir, `${timestamp}.mp4`);
@@ -40,8 +40,7 @@ exports.extractFrames = async (localVideoPath) => {
         const timestamp = Date.now();
 
         const frameDir = path.join(
-            process.cwd(),
-            "src/storage/frames",
+            framesDir,
             timestamp.toString()
         );
 

@@ -3,6 +3,7 @@ const path = require("path");
 const axios = require("axios");
 const pdfParse = require("pdf-parse");
 const aiService = require("./ai.service");
+const { tempDir } = require("../config/storage");
 
 /**
  * Download PDF from URL → local path
@@ -38,7 +39,6 @@ const extractPDFText = async (filePath) => {
 exports.processDocument = async (fileUrl, prompt) => {
     const timestamp = Date.now();
 
-    const tempDir = path.join(process.cwd(), "src/storage/temp");
     fs.mkdirSync(tempDir, { recursive: true });
 
     const localPath = path.join(tempDir, `${timestamp}.pdf`);

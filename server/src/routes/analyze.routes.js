@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/analyze.controller");
-const { upload } = require("../middlewares/upload.middleware");
+const { upload, handleUploadError } = require("../middlewares/upload.middleware");
 const auth = require("../middlewares/auth.middleware");
 
 router.post("/image", auth, controller.analyzeImage);
@@ -14,6 +14,7 @@ router.post(
     "/compare-images",
     auth,
     upload.array("images", 5),
+    handleUploadError,
     controller.compareImages
 );
 

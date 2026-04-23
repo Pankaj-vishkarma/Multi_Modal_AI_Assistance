@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const aiService = require("./ai.service");
+const { tempDir } = require("../config/storage");
 
 /**
  * Download audio from URL → local file
@@ -29,7 +30,6 @@ exports.processAudio = async (fileUrl) => {
     try {
         const timestamp = Date.now();
 
-        const tempDir = path.join(process.cwd(), "src/storage/temp");
         fs.mkdirSync(tempDir, { recursive: true });
 
         const localAudioPath = path.join(tempDir, `${timestamp}.mp3`);

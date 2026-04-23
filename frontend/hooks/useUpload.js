@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { uploadMedia } from '../lib/api';
+import { normalizeMediaUrl, uploadMedia } from '../lib/api';
 import { showSuccessToast, showErrorToast } from '../hooks/use-toast';
 
 export const useUpload = () => {
@@ -42,7 +42,7 @@ export const useUpload = () => {
       }
 
       const uploadedFile = {
-        url: fileUrl,
+        url: normalizeMediaUrl(fileUrl),
         type: file.type,
         name: file.name,
         size: file.size,

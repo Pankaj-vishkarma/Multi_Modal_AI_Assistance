@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const routes = require("./routes");
 const errorMiddleware = require("./middlewares/error.middleware");
 const logger = require("./utils/logger");
+const { storageRoot, uploadsDir } = require("./config/storage");
 
 dotenv.config();
 
@@ -55,13 +56,24 @@ app.use(compression());
 // ================= STATIC FILES =================
 
 app.use(
+    "/uploads",
+    (req, res, next) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        next();
+    },
+    express.static(uploadsDir)
+);
+
+// Legacy URLs may exist in old chats or database records.
+app.use(
     "/storage",
     (req, res, next) => {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
         next();
     },
-    express.static("src/storage")
+    express.static(storageRoot)
 );
 
 // ================= LOGGER =================

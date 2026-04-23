@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import ReactMarkdown from "react-markdown";
+import { normalizeMediaUrl } from '../lib/api';
 
 export function ChatMessage({ message, index }) {
   const isUser = message.role === 'user';
@@ -64,6 +64,7 @@ export function ChatMessage({ message, index }) {
 }
 
 function MediaPreviewItem({ attachment, isUser }) {
+  const mediaUrl = normalizeMediaUrl(attachment.url);
   const isImage = attachment.type?.startsWith('image/');
   const isVideo = attachment.type?.startsWith('video/');
   const isAudio = attachment.type?.startsWith('audio/');
@@ -72,7 +73,7 @@ function MediaPreviewItem({ attachment, isUser }) {
   if (isImage) {
     return (
       <img
-        src={attachment.url}
+        src={mediaUrl}
         alt="Attachment"
         onError={(e) => (e.target.style.display = "none")}
         className="rounded max-w-xs max-h-64 object-cover"
@@ -83,7 +84,7 @@ function MediaPreviewItem({ attachment, isUser }) {
   if (isVideo) {
     return (
       <video
-        src={attachment.url}
+        src={mediaUrl}
         controls
         onError={(e) => (e.target.style.display = "none")}
         className="rounded max-w-xs max-h-64"
@@ -94,7 +95,7 @@ function MediaPreviewItem({ attachment, isUser }) {
   if (isAudio) {
     return (
       <audio
-        src={attachment.url}
+        src={mediaUrl}
         controls
         className="w-full"
       />

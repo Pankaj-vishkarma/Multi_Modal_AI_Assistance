@@ -1,11 +1,16 @@
 const fs = require("fs");
 const path = require("path");
+const { uploadsDir } = require("../config/storage");
 
 /**
  * Delete files older than 24h
  */
 exports.cleanupOldFiles = () => {
-    const dir = "src/storage/uploads";
+    const dir = uploadsDir;
+
+    if (!fs.existsSync(dir)) {
+        return;
+    }
 
     fs.readdirSync(dir).forEach(file => {
         const filePath = path.join(dir, file);

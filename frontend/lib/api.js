@@ -5,6 +5,26 @@ import axios from "axios";
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
 
+const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, "");
+
+export const normalizeMediaUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+
+  if (/^https?:\/\//i.test(url) || url.startsWith("data:") || url.startsWith("blob:")) {
+    return url;
+  }
+
+  if (url.startsWith("/uploads/") || url.startsWith("/storage/")) {
+    return `${API_ORIGIN}${url}`;
+  }
+
+  if (url.startsWith("uploads/") || url.startsWith("storage/")) {
+    return `${API_ORIGIN}/${url}`;
+  }
+
+  return url;
+};
+
 const API = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -19,6 +39,14 @@ API.interceptors.request.use((config) => {
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (typeof config.headers.delete === "function") {
+      config.headers.delete("Content-Type");
+    } else {
+      delete config.headers["Content-Type"];
+    }
   }
 
   return config;
@@ -143,9 +171,6 @@ export const uploadMedia = async (file, onProgress) => {
   formData.append("file", file);
 
   return await API.post("/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
     onUploadProgress: (progressEvent) => {
       if (progressEvent.total) {
         const percent = Math.round(
@@ -175,11 +200,7 @@ export const compareImagesAPI = async (files) => {
   });
 
   try {
-    const response = await API.post("/analyze/compare-images", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await API.post("/analyze/compare-images", formData);
 
     return response;
   } catch (error) {

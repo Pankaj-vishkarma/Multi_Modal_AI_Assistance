@@ -1,5 +1,6 @@
 const asyncHandler = require("../middlewares/async.middleware");
 const Media = require("../models/media.model");
+const { toPublicUploadUrl } = require("../config/storage");
 
 exports.uploadFile = asyncHandler(async (req, res) => {
     const file = req.file;
@@ -18,18 +19,15 @@ exports.uploadFile = asyncHandler(async (req, res) => {
         size: file.size,
     });
 
-    // IMPORTANT: create public URL
-    const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
-
-    const cleanPath = file.path
-        .replace(/\\/g, "/")
-        .replace("src/", "");
-
-    const fileUrl = `${BASE_URL}/${cleanPath}`;
+    const fileUrl = toPublicUploadUrl(file.filename, req);
 
     res.json({
         success: true,
         url: fileUrl,
+        fileUrl,
+        name: file.originalname,
+        type: file.mimetype,
+        size: file.size,
         data: saved,
     });
 });
