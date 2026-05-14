@@ -1,0 +1,183 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Light Theme (ChatGPT Default) */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f7;
+  --bg-tertiary: #ececf1;
+  --text-primary: #0d0d0d;
+  --text-secondary: #565869;
+  --text-tertiary: #8e8ea0;
+  --border-color: #d1d5db;
+  --accent-color: #10a37f;
+  --accent-light: #d1fae5;
+  --message-user-bg: #10a37f;
+  --message-user-text: #ffffff;
+  --message-assistant-bg: #f7f7f7;
+  --message-assistant-text: #0d0d0d;
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-text: #0d0d0d;
+  --sidebar-bg: #ffffff;
+  --header-bg: #ffffff;
+  --header-text: #0d0d0d;
+  --header-border: #d1d5db;
+  --hover-bg: #f7f7f7;
+  
+  --background: #ffffff;
+  --foreground: #0d0d0d;
+  --card: #f7f7f7;
+  --card-foreground: #0d0d0d;
+  --popover: #ffffff;
+  --popover-foreground: #0d0d0d;
+  --primary: #10a37f;
+  --primary-foreground: #ffffff;
+  --secondary: #f7f7f7;
+  --secondary-foreground: #0d0d0d;
+  --muted: #ececf1;
+  --muted-foreground: #565869;
+  --accent: #10a37f;
+  --accent-foreground: #ffffff;
+  --destructive: #d32f2f;
+  --destructive-foreground: #ffffff;
+  --border: #d1d5db;
+  --input: #ffffff;
+  --ring: #10a37f;
+  --chart-1: #10a37f;
+  --chart-2: #6366f1;
+  --chart-3: #3b82f6;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0d0d0d;
+  --sidebar-primary: #10a37f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f7f7f7;
+  --sidebar-accent-foreground: #0d0d0d;
+  --sidebar-border: #d1d5db;
+  --sidebar-ring: #10a37f;
+}
+
+/* Dark Theme */
+.dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #212121;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #ececf1;
+  --text-secondary: #c5c5d2;
+  --text-tertiary: #8e8ea0;
+  --border-color: #404550;
+  --accent-color: #10a37f;
+  --accent-light: #1e5a4c;
+  --message-user-bg: #10a37f;
+  --message-user-text: #ffffff;
+  --message-assistant-bg: #212121;
+  --message-assistant-text: #ececf1;
+  --input-bg: #212121;
+  --input-border: #404550;
+  --input-text: #ececf1;
+  --sidebar-bg: #1a1a1a;
+  --header-bg: #1a1a1a;
+  --header-text: #ececf1;
+  --header-border: #404550;
+  --hover-bg: #2d2d2d;
+
+  --background: #1a1a1a;
+  --foreground: #ececf1;
+  --card: #212121;
+  --card-foreground: #ececf1;
+  --popover: #1a1a1a;
+  --popover-foreground: #ececf1;
+  --primary: #10a37f;
+  --primary-foreground: #ffffff;
+  --secondary: #212121;
+  --secondary-foreground: #ececf1;
+  --muted: #2d2d2d;
+  --muted-foreground: #c5c5d2;
+  --accent: #10a37f;
+  --accent-foreground: #ffffff;
+  --destructive: #ff6b6b;
+  --destructive-foreground: #1a1a1a;
+  --border: #404550;
+  --input: #212121;
+  --ring: #10a37f;
+  --chart-1: #10a37f;
+  --chart-2: #818cf8;
+  --chart-3: #60a5fa;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #ececf1;
+  --sidebar-primary: #10a37f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #212121;
+  --sidebar-accent-foreground: #ececf1;
+  --sidebar-border: #404550;
+  --sidebar-ring: #10a37f;
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  html {
+    background-color: var(--bg-primary);
+  }
+}
+
+/* Smooth theme transition */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
